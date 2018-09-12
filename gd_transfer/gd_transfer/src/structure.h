@@ -56,6 +56,17 @@ public:
 	int i_PointNo_2;
 };
 
+class BlockPhysicalAttribute
+{
+public:
+	double d_density;
+	double d_ElasticModulus;
+	double d_PoissonRatio;
+	double d_TensionStrength;
+	double d_cohesion;
+	double d_FrictionAngle;
+};
+
 class GmshDDA
 {
 public:
@@ -68,10 +79,13 @@ public:
 	vector<CGmshNode> lv_GmshNode;
 	vector<CGmshLine> lv_GmshLine;
 	vector<CGmshTriangle> lv_GmshTriangle;
+	BlockPhysicalAttribute m_BlkPhyAttr;
+	void fReadBlkPhyAttr_txt(string str_0);
 	void fReadGmsh_msh(string str_0);
 	void fWriteDDABlock_json(string str_0);
 	void fWriteDDABlock_vtp(string str_0);
 };
+
 
 
 

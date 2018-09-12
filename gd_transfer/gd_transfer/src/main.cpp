@@ -19,6 +19,7 @@ int main()
 	cout << "-----\n";
 	
 	GmshDDA mGmshDDA_1;
+	mGmshDDA_1.fReadBlkPhyAttr_txt("0_BlkPhyAttr.txt");
 	mGmshDDA_1.fReadGmsh_msh("0.msh");
 	mGmshDDA_1.fWriteDDABlock_json("0_block.json");
 	mGmshDDA_1.fWriteDDABlock_vtp("0_block.vtp");

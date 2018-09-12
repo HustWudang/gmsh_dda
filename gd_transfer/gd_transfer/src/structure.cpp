@@ -3,6 +3,27 @@
 
 // implementation of the functions in "structure.h".
 
+void GmshDDA::fReadBlkPhyAttr_txt(string str_0)
+{
+	ifstream infile;
+	infile.open(str_0);
+	if (infile.is_open())
+	{
+		infile >> m_BlkPhyAttr.d_density 
+			>> m_BlkPhyAttr.d_ElasticModulus 
+			>> m_BlkPhyAttr.d_PoissonRatio 
+			>> m_BlkPhyAttr.d_TensionStrength 
+			>> m_BlkPhyAttr.d_cohesion 
+			>> m_BlkPhyAttr.d_FrictionAngle;
+		cout << "read 0_BlkPhyAttr.txt successfully ...\n";
+		infile.close();
+	}
+	else
+	{
+		cout << "[Error] in opening .msh file !\n";
+	}
+}
+
 void GmshDDA::fReadGmsh_msh(string str_0)
 {
 	ifstream infile;
@@ -103,11 +124,11 @@ void GmshDDA::fWriteDDABlock_json(string str_0)
 			of << "[" << lv_GmshPoint[lv_GmshTriangle[i_triangle].i_PointNo_2 - 1].x << "," << lv_GmshPoint[lv_GmshTriangle[i_triangle].i_PointNo_2 - 1].y << "]";
 			of << "]" << ",";
 			////////// ----- physical parameter -----
-			of << "\"density\":" << 2500 << ",";
-			of << "\"elastic_modulus\":" << 1E10 << ",";
-			of << "\"poisson_ratio\":" << 0.25 << ",";
-			of << "\"cohesion\":" << 1E6 << ",";
-			of << "\"friction_angle\":" << 45 << ",";
+			of << "\"density\":" << m_BlkPhyAttr.d_density << ",";
+			of << "\"elastic_modulus\":" << m_BlkPhyAttr.d_ElasticModulus << ",";
+			of << "\"poisson_ratio\":" << m_BlkPhyAttr.d_PoissonRatio << ",";
+			of << "\"cohesion\":" << m_BlkPhyAttr.d_cohesion << ",";
+			of << "\"friction_angle\":" << m_BlkPhyAttr.d_FrictionAngle << ",";
 			////////// ----- other conditions -----
 			of << "\"velo\":";
 			of << "[";
@@ -190,23 +211,23 @@ void GmshDDA::fWriteDDABlock_vtp(string str_0)
 			of << id << " ";
 			of << "</DataArray>";
 			of << "<DataArray type=\"Float32\" Name=\"Density\" format=\"ascii\">";
-			float dens = 2500;
+			float dens = m_BlkPhyAttr.d_density;
 			of << dens << " ";
 			of << "</DataArray>";
 			of << "<DataArray type=\"Float32\" Name=\"Elastic_Modulus\" format=\"ascii\">";
-			float e_m = 1E10;
+			float e_m = m_BlkPhyAttr.d_ElasticModulus;
 			of << e_m << " ";
 			of << "</DataArray>";
 			of << "<DataArray type=\"Float32\" Name=\"Poisson_Ratio\" format=\"ascii\">";
-			float p_r = 0.25;
+			float p_r = m_BlkPhyAttr.d_PoissonRatio;
 			of << p_r << " ";
 			of << "</DataArray>";
 			of << "<DataArray type=\"Float32\" Name=\"Cohesion\" format=\"ascii\">";
-			float coh = 1E6;
+			float coh = m_BlkPhyAttr.d_cohesion;
 			of << coh << " ";
 			of << "</DataArray>";
 			of << "<DataArray type=\"Float32\" Name=\"Friction_Angle\" format=\"ascii\">";
-			float f_a = 45;
+			float f_a = m_BlkPhyAttr.d_FrictionAngle;
 			of << f_a << " ";
 			of << "</DataArray>";
 			of << "<DataArray type=\"Float32\" Name=\"Stress\" NumberOfComponents=\"3\" format=\"ascii\">";
