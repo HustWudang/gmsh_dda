@@ -1,7 +1,7 @@
 # gmsh_dda
-Transfer triangular or quadrilateral mesh by gmsh to dda program.
+Transfer triangular & tetrahedral mesh by Gmsh to dda program.
 Version 1.0, 2018-09-23.
-By Dr. Fei ZHENG.
+Contact: Dr. Fei ZHENG.
 feizhengprchina@hotmail.com
 --------------------------------------------------
 [Input & output file format]
