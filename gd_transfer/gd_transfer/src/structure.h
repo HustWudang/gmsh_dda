@@ -98,6 +98,7 @@ public:
 	BlockPhysicalAttribute m_BlkPhyAttr;
 	void fReadBlkPhyAttr_txt(string str_0);
 	void fReadGmsh_msh(string str_0);
+	void fReadGmshNew_msh(string str_0);
 	void fWriteDDABlock_triangle_json(string str_0);
 	void fWriteDDABlock_triangle_vtp(string str_0);
 	void fWriteDDABlock_tetrahedron_json(string str_0);

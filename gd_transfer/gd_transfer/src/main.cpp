@@ -16,7 +16,7 @@ int main()
 	// // [Screen Reminder] - check 2d or 3d mesh ...
 	int MESH_TYPE = 0;
 	cout << "------------------------------------------------------\n";
-	cout << " Transfer Gmsh file (0.msh) \n";
+	cout << " Transfer Gmsh file (0.msh)                           \n";
 	cout << "    to DDA block file (0_block.json & 0_block.vtp)    \n";
 	cout << "------------------------------------------------------\n";
 	cout << "[ 1st ] - INPUT Mesh Type (as follows):               \n";
@@ -30,7 +30,8 @@ int main()
 	{
 		GmshDDA mGmshDDA_2d;
 		mGmshDDA_2d.fReadBlkPhyAttr_txt("0_BlkPhyAttr.txt");
-		mGmshDDA_2d.fReadGmsh_msh("0.msh");
+		//mGmshDDA_2d.fReadGmsh_msh("0.msh");
+		mGmshDDA_2d.fReadGmshNew_msh("0.msh");
 		mGmshDDA_2d.fWriteDDABlock_triangle_json("0_block.json");
 		mGmshDDA_2d.fWriteDDABlock_triangle_vtp("0_block.vtp");
 	}

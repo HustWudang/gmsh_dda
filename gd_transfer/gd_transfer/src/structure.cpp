@@ -1,6 +1,8 @@
 // header.
 #include "structure.h"
 
+using namespace std;
+
 // implementation of the functions in "structure.h".
 
 void GmshDDA::fReadBlkPhyAttr_txt(string str_0)
@@ -9,11 +11,11 @@ void GmshDDA::fReadBlkPhyAttr_txt(string str_0)
 	infile.open(str_0);
 	if (infile.is_open())
 	{
-		infile >> m_BlkPhyAttr.d_density 
-			>> m_BlkPhyAttr.d_ElasticModulus 
-			>> m_BlkPhyAttr.d_PoissonRatio 
-			>> m_BlkPhyAttr.d_TensionStrength 
-			>> m_BlkPhyAttr.d_cohesion 
+		infile >> m_BlkPhyAttr.d_density
+			>> m_BlkPhyAttr.d_ElasticModulus
+			>> m_BlkPhyAttr.d_PoissonRatio
+			>> m_BlkPhyAttr.d_TensionStrength
+			>> m_BlkPhyAttr.d_cohesion
 			>> m_BlkPhyAttr.d_FrictionAngle;
 		cout << "read 0_BlkPhyAttr.txt successfully ...\n";
 		infile.close();
@@ -75,7 +77,7 @@ void GmshDDA::fReadGmsh_msh(string str_0)
 					CGmshLine nGmshLine_t;
 					nGmshLine_t.i_ElementNo = i_ElementNo_t;
 					nGmshLine_t.i_type = i_ElementType_t;
-					sstream >> nGmshLine_t.i_dimension >> nGmshLine_t.i_reserve >> nGmshLine_t.i_GlobalLineNo 
+					sstream >> nGmshLine_t.i_dimension >> nGmshLine_t.i_reserve >> nGmshLine_t.i_GlobalLineNo
 						>> nGmshLine_t.i_PointNo_0 >> nGmshLine_t.i_PointNo_1;
 					lv_GmshLine.push_back(nGmshLine_t);
 				}
@@ -84,25 +86,306 @@ void GmshDDA::fReadGmsh_msh(string str_0)
 					CGmshTriangle nGmshTriangle_t;
 					nGmshTriangle_t.i_ElementNo = i_ElementNo_t;
 					nGmshTriangle_t.i_type = i_ElementType_t;
-					sstream >> nGmshTriangle_t.i_dimension >> nGmshTriangle_t.i_reserve >> nGmshTriangle_t.i_GlobalSurfaceNo 
-						>> nGmshTriangle_t.i_PointNo_0 
-						>> nGmshTriangle_t.i_PointNo_1 
+					sstream >> nGmshTriangle_t.i_dimension >> nGmshTriangle_t.i_reserve >> nGmshTriangle_t.i_GlobalSurfaceNo
+						>> nGmshTriangle_t.i_PointNo_0
+						>> nGmshTriangle_t.i_PointNo_1
 						>> nGmshTriangle_t.i_PointNo_2;
 					lv_GmshTriangle.push_back(nGmshTriangle_t);
 				}
 				else if (i_ElementType_t == 4)
 				{
 					CGmshTetrahedron nGmshTetrahedron_t;
-					sstream >> nGmshTetrahedron_t.i_dimension >> nGmshTetrahedron_t.i_reserve >> nGmshTetrahedron_t.i_GlobalVolumeNo 
-						>> nGmshTetrahedron_t.i_PointNo_0 
-						>> nGmshTetrahedron_t.i_PointNo_1 
-						>> nGmshTetrahedron_t.i_PointNo_2 
+					sstream >> nGmshTetrahedron_t.i_dimension >> nGmshTetrahedron_t.i_reserve >> nGmshTetrahedron_t.i_GlobalVolumeNo
+						>> nGmshTetrahedron_t.i_PointNo_0
+						>> nGmshTetrahedron_t.i_PointNo_1
+						>> nGmshTetrahedron_t.i_PointNo_2
 						>> nGmshTetrahedron_t.i_PointNo_3;
 					lv_GmshTetrahedron.push_back(nGmshTetrahedron_t);
 				}
 				else
 				{
 					cout << "[Error] Additional type should be considered in fReadGmsh_msh() !\n";
+				}
+			}
+		}
+		i_NumNode = lv_GmshNode.size();
+		i_NumLine = lv_GmshLine.size();
+		i_NumTriangle = lv_GmshTriangle.size();
+		i_NumTetrahedron = lv_GmshTetrahedron.size();
+		cout << "read 0.msh successfully ...\n";
+		infile.close();
+	}
+	else
+	{
+		cout << "[Error] in opening .msh file !\n";
+	}
+}
+
+void GmshDDA::fReadGmshNew_msh(string str_0)
+{
+	ifstream infile;
+	infile.open(str_0);
+	if (infile.is_open())
+	{
+		bool b_FindMeshFormat = false;
+		bool b_FindEntities = false;
+		bool b_FindNodes = false;
+		bool b_FindElements = false;
+		string s_line;
+		while (getline(infile, s_line))
+		{
+			if (*s_line.begin() == '$')
+			{
+				// Comments - ommitted.
+				size_t st_FindComments = s_line.find("$Comments");
+				if (st_FindComments != string::npos)
+				{
+					string s_sectionline;
+					while (getline(infile, s_sectionline))
+					{
+						// check if go to the end of Comments section.
+						size_t st_FindEnComments = s_sectionline.find("$EndComments");
+						if (st_FindEnComments != string::npos) { break; }
+						else { continue; }
+					}
+				}
+				// $MeshFormat.
+				if (b_FindMeshFormat != true)
+				{
+					size_t st_FindMeshFormat = s_line.find("$MeshFormat");
+					if (st_FindMeshFormat != string::npos)
+					{
+						b_FindMeshFormat = true;
+						string s_sectionline;
+						while (getline(infile, s_sectionline))
+						{
+							if (*s_sectionline.begin() == '$')
+							{
+								// check if go to the end of this section.
+								size_t st_FindEndMeshFormat = s_sectionline.find("$EndMeshFormat");
+								if (st_FindEndMeshFormat != string::npos) { break; }
+								else { cout << "[Error] wrong $MeshFormat section in .msh !\n"; }
+							}
+							else
+							{
+								stringstream sstream_section(s_sectionline);
+								// found out.
+								double d_version;
+								int i_binary;
+								unsigned long ul_size;
+								sstream_section >> d_version >> i_binary >> ul_size;
+							}
+						}
+					}
+				}
+				// $Entities.
+				else if (b_FindEntities != true)
+				{
+					size_t st_FindEntities = s_line.find("$Entities");
+					if (st_FindEntities != string::npos)
+					{
+						b_FindEntities = true;
+						int i_sectionline = 0;
+						string s_sectionline;
+						while (getline(infile, s_sectionline))
+						{
+							if (*s_sectionline.begin() == '$')
+							{
+								// check if go to the end of this section.
+								size_t st_FindEndEntities = s_sectionline.find("$EndEntities");
+								if (st_FindEndEntities != string::npos) { break; }
+								else { cout << "[Error] wrong $Entities format in .msh !\n"; }
+							}
+							else
+							{
+								i_sectionline++;
+								continue;
+							}
+						}
+					}
+				}
+				//$Nodes.
+				else if (b_FindNodes != true)
+				{
+					size_t st_FindNodes = s_line.find("$Nodes");
+					if (st_FindNodes != string::npos)
+					{
+						b_FindNodes = true;
+						int i_sectionline = 0;
+						string s_sectionline;
+						while (getline(infile, s_sectionline))
+						{
+							size_t numEntityBlocks, numNodes, minNodeTag, maxNodeTag;
+							if (*s_sectionline.begin() == '$')
+							{
+								// check if go to the end of this section.
+								size_t st_FindEndNodes = s_sectionline.find("$EndNodes");
+								if (st_FindEndNodes != string::npos) { break; }
+								else { cout << "[Error] wrong $Nodes format in .msh !\n"; }
+							}
+							else
+							{
+								i_sectionline++;
+								stringstream sstream_section(s_sectionline);
+								if (i_sectionline == 1)
+								{
+									sstream_section >> numEntityBlocks >> numNodes >> minNodeTag >> maxNodeTag;
+									// total point number.
+									i_NumPoint = numNodes;
+									int i_PointArrayCounter = 0;
+									for (int i_entities = 0; i_entities < numEntityBlocks; i_entities++)
+									{
+										int i_entitiesline = 0;
+										int entityDim, entityTag, parametric;
+										size_t numNodesBlock;
+										string s_entitiesline;
+										while (getline(infile, s_entitiesline))
+										{
+											i_entitiesline++;
+											stringstream sstream_entities(s_entitiesline);
+											if (i_entitiesline == 1)
+											{
+												// entities head.
+												sstream_entities >> entityDim >> entityTag >> parametric >> numNodesBlock;
+											}
+											else if (i_entitiesline >= 2 && i_entitiesline <= 2 + numNodesBlock - 1)
+											{
+												CGmshPoint nGmshPoint_t;
+												sstream_entities >> nGmshPoint_t.i_No;
+												lv_GmshPoint.push_back(nGmshPoint_t);
+											}
+											else if (i_entitiesline >= 2 + numNodesBlock && i_entitiesline <= 2 + numNodesBlock + numNodesBlock - 1)
+											{
+												int it_PointArrayNo = i_PointArrayCounter + i_entitiesline - numNodesBlock - 2;
+												sstream_entities >> lv_GmshPoint[it_PointArrayNo].x >> lv_GmshPoint[it_PointArrayNo].y >> lv_GmshPoint[it_PointArrayNo].z;
+												if (i_entitiesline == 2 + numNodesBlock + numNodesBlock - 1)
+												{
+													i_PointArrayCounter += numNodesBlock;
+													break;
+												}
+											}
+										}
+									}
+								}
+								else { cout << "[Error] wrong cycle in intepreting $Nodes !\n"; }
+							}
+						}
+					}
+				}
+				// $Elements.
+				else if (b_FindElements != true)
+				{
+					size_t b_FindElements = s_line.find("$Elements");
+					if (b_FindElements != string::npos)
+					{
+						b_FindElements = true;
+						int i_sectionline = 0;
+						string s_sectionline;
+						while (getline(infile, s_sectionline))
+						{
+							size_t numEntityBlocks, numElements, minElementTag, maxElementTag;
+							if (*s_sectionline.begin() == '$')
+							{
+								// check if go to the end of this section.
+								size_t st_FindEndEntities = s_sectionline.find("$EndElements");
+								if (st_FindEndEntities != string::npos) { break; }
+								else { cout << "[Error] wrong $Elements format in .msh !\n"; }
+							}
+							else
+							{
+								i_sectionline++;
+								stringstream sstream_section(s_sectionline);
+								if (i_sectionline == 1)
+								{
+									sstream_section >> numEntityBlocks >> numElements >> minElementTag >> maxElementTag;
+									// total point number.
+									i_NumElement = numElements;
+									int i_GmshNodeNoCounter = 0;
+									int i_GmshLineNoCounter = 0;
+									int i_GmshTriangleNoCounter = 0;
+									int i_GmshTetrahedronNoCounter = 0;
+									for (int i_entities = 0; i_entities < numEntityBlocks; i_entities++)
+									{
+										int i_entitiesline = 0;
+										int entityDim, entityTag, elementType;
+										size_t numElementsBlock;
+										string s_entitiesline;
+										while (getline(infile, s_entitiesline))
+										{
+											i_entitiesline++;
+											stringstream sstream_entities(s_entitiesline);
+											if (i_entitiesline == 1)
+											{
+												// entities head.
+												sstream_entities >> entityDim >> entityTag >> elementType >> numElementsBlock;
+											}
+											else if (i_entitiesline >= 2 && i_entitiesline <= 2 + numElementsBlock - 1)
+											{
+												if (elementType == 15)
+												{
+													i_GmshNodeNoCounter++;
+													CGmshNode nGmshNode_t;
+													nGmshNode_t.i_ElementNo = i_GmshNodeNoCounter;
+													nGmshNode_t.i_type = elementType;
+													sstream_entities >> nGmshNode_t.i_NodeNo >> nGmshNode_t.i_PointNo;
+													lv_GmshNode.push_back(nGmshNode_t);
+												}
+												else if (elementType == 1)
+												{
+													i_GmshLineNoCounter++;
+													CGmshLine nGmshLine_t;
+													nGmshLine_t.i_ElementNo = i_GmshLineNoCounter;
+													nGmshLine_t.i_type = elementType;
+													sstream_entities >> nGmshLine_t.i_GlobalLineNo >> nGmshLine_t.i_PointNo_0 >> nGmshLine_t.i_PointNo_1;
+													lv_GmshLine.push_back(nGmshLine_t);
+												}
+												else if (elementType == 2)
+												{
+													i_GmshTriangleNoCounter++;
+													CGmshTriangle nGmshTriangle_t;
+													nGmshTriangle_t.i_ElementNo = i_GmshTriangleNoCounter;
+													nGmshTriangle_t.i_type = elementType;
+													sstream_entities >> nGmshTriangle_t.i_GlobalSurfaceNo
+														>> nGmshTriangle_t.i_PointNo_0
+														>> nGmshTriangle_t.i_PointNo_1
+														>> nGmshTriangle_t.i_PointNo_2;
+													lv_GmshTriangle.push_back(nGmshTriangle_t);
+												}
+												else if (elementType == 4)
+												{
+													///// !!!!! THIS CASE IS NOT CHECKED !!!!!.
+													i_GmshTetrahedronNoCounter++;
+													CGmshTetrahedron nGmshTetrahedron_t;
+													nGmshTetrahedron_t.i_ElementNo = i_GmshTetrahedronNoCounter;
+													sstream_entities >> nGmshTetrahedron_t.i_GlobalVolumeNo
+														>> nGmshTetrahedron_t.i_PointNo_0
+														>> nGmshTetrahedron_t.i_PointNo_1
+														>> nGmshTetrahedron_t.i_PointNo_2
+														>> nGmshTetrahedron_t.i_PointNo_3;
+													lv_GmshTetrahedron.push_back(nGmshTetrahedron_t);
+												}
+												else
+												{
+													cout << "[Error] Additional type should be considered in fReadGmsh_msh() !\n";
+												}
+												// check the ending.
+												if (i_entitiesline == 2 + numElementsBlock - 1)
+												{
+													if (elementType == 15) { i_GmshNodeNoCounter += numElementsBlock; }
+													else if (elementType == 1) { i_GmshLineNoCounter += numElementsBlock; }
+													else if (elementType == 2) { i_GmshTriangleNoCounter += numElementsBlock; }
+													else if (elementType == 4) { i_GmshTetrahedronNoCounter += numElementsBlock; }
+													else { cout << "[Error] Additional type should be considered in fReadGmsh_msh() !\n"; }
+													break;
+												}
+											}
+										}
+									}
+								}
+								else { cout << "[Error] wrong cycle in intepreting $Nodes !\n"; }
+							}
+						}
+					}
 				}
 			}
 		}
