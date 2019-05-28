@@ -5,7 +5,7 @@ using namespace std;
 
 // implementation of the functions in "structure.h".
 
-void GmshDDA::fReadBlkPhyAttr_txt(string str_0)
+void CGmshNetDDA::fRead_BlkPhyAttr_txt(string str_0)
 {
 	ifstream infile;
 	infile.open(str_0);
@@ -26,7 +26,7 @@ void GmshDDA::fReadBlkPhyAttr_txt(string str_0)
 	}
 }
 
-void GmshDDA::fReadGmsh_msh(string str_0)
+void CGmshNetDDA::fRead_Gmsh_msh_v10(string str_0)
 {
 	ifstream infile;
 	infile.open(str_0);
@@ -90,6 +90,9 @@ void GmshDDA::fReadGmsh_msh(string str_0)
 						>> nGmshTriangle_t.i_PointNo_0
 						>> nGmshTriangle_t.i_PointNo_1
 						>> nGmshTriangle_t.i_PointNo_2;
+					nGmshTriangle_t.ri_EdgeNodeNo[0] = nGmshTriangle_t.i_PointNo_0;
+					nGmshTriangle_t.ri_EdgeNodeNo[1] = nGmshTriangle_t.i_PointNo_1;
+					nGmshTriangle_t.ri_EdgeNodeNo[2] = nGmshTriangle_t.i_PointNo_2;
 					lv_GmshTriangle.push_back(nGmshTriangle_t);
 				}
 				else if (i_ElementType_t == 4)
@@ -121,7 +124,7 @@ void GmshDDA::fReadGmsh_msh(string str_0)
 	}
 }
 
-void GmshDDA::fReadGmshNew_msh(string str_0)
+void CGmshNetDDA::fRead_Gmsh_msh_v40(string str_0)
 {
 	ifstream infile;
 	infile.open(str_0);
@@ -204,7 +207,7 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 						}
 					}
 				}
-				//$Nodes.
+				// $Nodes.
 				else if (b_FindNodes != true)
 				{
 					size_t st_FindNodes = s_line.find("$Nodes");
@@ -237,7 +240,7 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 									{
 										int i_entitiesline = 0;
 										int entityDim, entityTag, parametric;
-										size_t numNodesBlock;
+										size_t numNodesInBlock;
 										string s_entitiesline;
 										while (getline(infile, s_entitiesline))
 										{
@@ -246,21 +249,21 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 											if (i_entitiesline == 1)
 											{
 												// entities head.
-												sstream_entities >> entityDim >> entityTag >> parametric >> numNodesBlock;
+												sstream_entities >> entityDim >> entityTag >> parametric >> numNodesInBlock;
 											}
-											else if (i_entitiesline >= 2 && i_entitiesline <= 2 + numNodesBlock - 1)
+											else if (i_entitiesline >= 2 && i_entitiesline <= 2 + numNodesInBlock - 1)
 											{
 												CGmshPoint nGmshPoint_t;
 												sstream_entities >> nGmshPoint_t.i_No;
 												lv_GmshPoint.push_back(nGmshPoint_t);
 											}
-											else if (i_entitiesline >= 2 + numNodesBlock && i_entitiesline <= 2 + numNodesBlock + numNodesBlock - 1)
+											else if (i_entitiesline >= 2 + numNodesInBlock && i_entitiesline <= 2 + numNodesInBlock + numNodesInBlock - 1)
 											{
-												int it_PointArrayNo = i_PointArrayCounter + i_entitiesline - numNodesBlock - 2;
+												int it_PointArrayNo = i_PointArrayCounter + i_entitiesline - numNodesInBlock - 2;
 												sstream_entities >> lv_GmshPoint[it_PointArrayNo].x >> lv_GmshPoint[it_PointArrayNo].y >> lv_GmshPoint[it_PointArrayNo].z;
-												if (i_entitiesline == 2 + numNodesBlock + numNodesBlock - 1)
+												if (i_entitiesline == 2 + numNodesInBlock + numNodesInBlock - 1)
 												{
-													i_PointArrayCounter += numNodesBlock;
+													i_PointArrayCounter += numNodesInBlock;
 													break;
 												}
 											}
@@ -308,7 +311,7 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 									{
 										int i_entitiesline = 0;
 										int entityDim, entityTag, elementType;
-										size_t numElementsBlock;
+										size_t numElementsInBlock;
 										string s_entitiesline;
 										while (getline(infile, s_entitiesline))
 										{
@@ -317,9 +320,9 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 											if (i_entitiesline == 1)
 											{
 												// entities head.
-												sstream_entities >> entityDim >> entityTag >> elementType >> numElementsBlock;
+												sstream_entities >> entityDim >> entityTag >> elementType >> numElementsInBlock;
 											}
-											else if (i_entitiesline >= 2 && i_entitiesline <= 2 + numElementsBlock - 1)
+											else if (i_entitiesline >= 2 && i_entitiesline <= 2 + numElementsInBlock - 1)
 											{
 												if (elementType == 15)
 												{
@@ -349,6 +352,9 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 														>> nGmshTriangle_t.i_PointNo_0
 														>> nGmshTriangle_t.i_PointNo_1
 														>> nGmshTriangle_t.i_PointNo_2;
+													nGmshTriangle_t.ri_EdgeNodeNo[0] = nGmshTriangle_t.i_PointNo_0;
+													nGmshTriangle_t.ri_EdgeNodeNo[1] = nGmshTriangle_t.i_PointNo_1;
+													nGmshTriangle_t.ri_EdgeNodeNo[2] = nGmshTriangle_t.i_PointNo_2;
 													lv_GmshTriangle.push_back(nGmshTriangle_t);
 												}
 												else if (elementType == 4)
@@ -369,12 +375,12 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 													cout << "[Error] Additional type should be considered in fReadGmsh_msh() !\n";
 												}
 												// check the ending.
-												if (i_entitiesline == 2 + numElementsBlock - 1)
+												if (i_entitiesline == 2 + numElementsInBlock - 1)
 												{
-													if (elementType == 15) { i_GmshNodeNoCounter += numElementsBlock; }
-													else if (elementType == 1) { i_GmshLineNoCounter += numElementsBlock; }
-													else if (elementType == 2) { i_GmshTriangleNoCounter += numElementsBlock; }
-													else if (elementType == 4) { i_GmshTetrahedronNoCounter += numElementsBlock; }
+													if (elementType == 15) { i_GmshNodeNoCounter += numElementsInBlock; }
+													else if (elementType == 1) { i_GmshLineNoCounter += numElementsInBlock; }
+													else if (elementType == 2) { i_GmshTriangleNoCounter += numElementsInBlock; }
+													else if (elementType == 4) { i_GmshTetrahedronNoCounter += numElementsInBlock; }
 													else { cout << "[Error] Additional type should be considered in fReadGmsh_msh() !\n"; }
 													break;
 												}
@@ -402,7 +408,34 @@ void GmshDDA::fReadGmshNew_msh(string str_0)
 	}
 }
 
-void GmshDDA::fWriteDDABlock_triangle_json(string str_0)
+void CGmshNetDDA::fRead_Network2d_JointLine_txt(string str_0)
+{
+	ifstream infile;
+	infile.open(str_0);
+	if (infile.is_open())
+	{
+		infile >> i_NumNetJointLine;
+		for (int i_line = 0; i_line < i_NumNetJointLine; i_line++)
+		{
+			CNet_JointLine mtNetJointLine;
+			mtNetJointLine.bg_z = 0;
+			mtNetJointLine.ed_z = 0;
+			infile >> mtNetJointLine.i_No;
+			infile >> mtNetJointLine.bg_x >> mtNetJointLine.bg_y;
+			infile >> mtNetJointLine.ed_x >> mtNetJointLine.ed_y;
+			lv_NetJointLine.push_back(mtNetJointLine);
+		}
+		cout << "read fracture.txt successfully ...\n";
+		infile.close();
+	}
+	else
+	{
+		cout << "[Error] in opening fracture.txt file !\n";
+	}
+}
+
+
+void CGmshNetDDA::fWrite_DDABlock_triangle_json(string str_0)
 {
 	ofstream of;
 	of.open(str_0);
@@ -468,7 +501,7 @@ void GmshDDA::fWriteDDABlock_triangle_json(string str_0)
 	}
 }
 
-void GmshDDA::fWriteDDABlock_triangle_vtp(string str_0)
+void CGmshNetDDA::fWrite_DDABlock_triangle_vtp(string str_0)
 {
 	ofstream of;
 	of.open(str_0);
@@ -576,7 +609,7 @@ void GmshDDA::fWriteDDABlock_triangle_vtp(string str_0)
 }
 
 
-void GmshDDA::fWriteDDABlock_tetrahedron_json(string str_0)
+void CGmshNetDDA::fWrite_DDABlock_tetrahedron_json(string str_0)
 {
 	ofstream of;
 	of.open(str_0);
@@ -652,7 +685,7 @@ void GmshDDA::fWriteDDABlock_tetrahedron_json(string str_0)
 }
 
 
-void GmshDDA::fWriteDDABlock_tetrahedron_vtp(string str_0)
+void CGmshNetDDA::fWrite_DDABlock_tetrahedron_vtp(string str_0)
 {
 	fstream of;
 	of.open(str_0, fstream::out | fstream::trunc);    // Open file to input data
@@ -779,4 +812,272 @@ void GmshDDA::fWriteDDABlock_tetrahedron_vtp(string str_0)
 	{
 		std::cout << "FOutput_PolyhedronVTP() Error : Can not open Files ! \n";
 	}
+}
+
+
+void CGmshNetDDA::fWrite_Network2d_matrix_vtk(string str_0)
+{
+	// Unstructured Grid in (*.vtk) file.
+	// Points.
+	// Cell list.
+	// Cell types.
+
+	fstream fout;
+	fout.open(str_0, fstream::out | fstream::trunc);
+	if (fout.is_open())
+	{
+		// always write big endian.
+		fout << "# vtk DataFile Version 2.0\n";
+		fout << "Matrix Pipe Network Visualization\n";
+		fout << "ASCII\n";
+		// Write POLYDATA
+		fout << "DATASET UNSTRUCTURED_GRID\n";
+		
+		// POINTS Data Head.
+		i_NumPoint = lv_GmshPoint.size();
+		fout << "POINTS " << i_NumPoint << " double\n";
+		
+		// POINTS Data Contents.
+		for (vector<CGmshPoint>::iterator it_point = lv_GmshPoint.begin(); it_point != lv_GmshPoint.end(); it_point++)
+		{
+			fout << it_point->x << "\t" << it_point->y << "\t" << 0 << "\n";
+		}
+
+		// CELLS data.
+		i_NumTriangle = lv_GmshTriangle.size();
+		fout << "CELLS " << i_NumTriangle << " " << (i_NumTriangle * 4) << "\n";
+		for (vector<CGmshTriangle>::iterator it_triangle = lv_GmshTriangle.begin(); it_triangle != lv_GmshTriangle.end(); it_triangle++)
+		{
+			fout << 3 << "\t" << (it_triangle->i_PointNo_0 - 1) << "\t" << (it_triangle->i_PointNo_1 - 1) << "\t" << (it_triangle->i_PointNo_2 - 1) << "\n";
+		}
+		fout << "CELL_TYPES " << i_NumTriangle << "\n";
+		for (vector<CGmshTriangle>::iterator it_triangle = lv_GmshTriangle.begin(); it_triangle != lv_GmshTriangle.end(); it_triangle++)
+		{
+			fout << 5 << "\n";
+		}
+		
+		// close file
+		fout.close();
+		// screen print
+		std::cout << "[Msg] Output matrix pipe network successfully ... \n";
+	}
+	else
+	{
+		std::cout << "[Error - OF] in fWrite_Network2d_matrix_vtk() !\n";
+		return;
+	}
+
+}
+
+
+void CGmshNetDDA::fWrite_Network2d_fracture_global_vtk(string str_0)
+{
+	// Unstructured Grid in (*.vtk) file.
+	// Points.
+	// Cell list.
+	// Cell types.
+
+	fstream fout;
+	fout.open(str_0, fstream::out | fstream::trunc);
+	if (fout.is_open())
+	{
+		// always write big endian.
+		fout << "# vtk DataFile Version 2.0\n";
+		fout << "Global Fracture Pipe Network Visualization\n";
+		fout << "ASCII\n";
+		// Write POLYDATA
+		fout << "DATASET UNSTRUCTURED_GRID\n";
+
+		// POINTS Data Head.
+		i_NumNetJointLine = lv_NetJointLine.size();
+		fout << "POINTS " << (2 * i_NumNetJointLine) << " double\n";
+
+		// POINTS Data Contents.
+		for (vector<CNet_JointLine>::iterator it_netjntline = lv_NetJointLine.begin(); it_netjntline != lv_NetJointLine.end(); it_netjntline++)
+		{
+			fout << it_netjntline->bg_x << "\t" << it_netjntline->bg_y << "\t" << 0 << "\n";
+			fout << it_netjntline->ed_x << "\t" << it_netjntline->ed_y << "\t" << 0 << "\n";
+		}
+
+		// CELLS data.
+		fout << "CELLS " << i_NumNetJointLine << " " << (i_NumNetJointLine * 3) << "\n";
+		for (int i_netjntline = 0; i_netjntline < i_NumNetJointLine; i_netjntline++)
+		{
+			fout << 2 << "\t" << (2 * i_netjntline) << "\t" << (2 * i_netjntline + 1) << "\n";
+		}
+		fout << "CELL_TYPES " << i_NumNetJointLine << "\n";
+		for (int i_netjntline = 0; i_netjntline < i_NumNetJointLine; i_netjntline++)
+		{
+			fout << 3 << "\n";
+		}
+
+		// close file
+		fout.close();
+		// screen print
+		std::cout << "[Msg] Output matrix pipe network successfully ... \n";
+	}
+	else
+	{
+		std::cout << "[Error - OF] in fWrite_Network2d_matrix_vtk() !\n";
+		return;
+	}
+}
+
+
+void CGmshNetDDA::fWrite_Network2d_fracture_local_vtk(string str_0)
+{
+	// Unstructured Grid in (*.vtk) file.
+	// Points.
+	// Cell list.
+	// Cell types.
+
+	fstream fout;
+	fout.open(str_0, fstream::out | fstream::trunc);
+	if (fout.is_open())
+	{
+		// always write big endian.
+		fout << "# vtk DataFile Version 2.0\n";
+		fout << "Local Fracture Pipe Network Visualization\n";
+		fout << "ASCII\n";
+		// Write POLYDATA
+		fout << "DATASET UNSTRUCTURED_GRID\n";
+
+		// POINTS Data Head.
+		i_NumPoint = lv_GmshPoint.size();
+		fout << "POINTS " << i_NumPoint << " double\n";
+
+		// POINTS Data Contents.
+		for (vector<CGmshPoint>::iterator it_point = lv_GmshPoint.begin(); it_point != lv_GmshPoint.end(); it_point++)
+		{
+			fout << it_point->x << "\t" << it_point->y << "\t" << 0 << "\n";
+		}
+
+		// CELLS data.
+		int i_NumFracLineSection = 0;
+		for (vector<CGmshTriangle>::iterator it_triangle = lv_GmshTriangle.begin(); it_triangle != lv_GmshTriangle.end(); it_triangle++)
+		{
+			for (int i_edge = 0; i_edge < 3; i_edge++)
+			{
+				int i_edge_next = i_edge + 1;
+				if (i_edge_next == 3) { i_edge_next = 0; }
+				if (it_triangle->ri_EdgeNodeNo[i_edge] > it_triangle->ri_EdgeNodeNo[i_edge_next]) { continue; }
+				if (1 == it_triangle->ri_EdgeFracFlag[i_edge]) { i_NumFracLineSection++; }
+			}
+		}
+		fout << "CELLS " << i_NumFracLineSection << " " << (i_NumFracLineSection * 3) << "\n";
+		for (vector<CGmshTriangle>::iterator it_triangle = lv_GmshTriangle.begin(); it_triangle != lv_GmshTriangle.end(); it_triangle++)
+		{
+			for (int i_edge = 0; i_edge < 3; i_edge++)
+			{
+				int i_edge_next = i_edge + 1;
+				if (i_edge_next == 3) { i_edge_next = 0; }
+				if (it_triangle->ri_EdgeNodeNo[i_edge] > it_triangle->ri_EdgeNodeNo[i_edge_next]) { continue; }
+				if (1 == it_triangle->ri_EdgeFracFlag[i_edge])
+				{
+					fout << 2 << "\t" << (it_triangle->ri_EdgeNodeNo[i_edge] - 1) << "\t" << (it_triangle->ri_EdgeNodeNo[i_edge_next] - 1) << "\n";
+				}
+			}
+		}
+		fout << "CELL_TYPES " << i_NumFracLineSection << "\n";
+		for (int i_section = 0; i_section < i_NumFracLineSection; i_section++)
+		{
+			fout << 3 << "\n";
+		}
+
+		// close file
+		fout.close();
+		// screen print
+		std::cout << "[Msg] Output matrix pipe network successfully ... \n";
+	}
+	else
+	{
+		std::cout << "[Error - OF] in fWrite_Network2d_matrix_vtk() !\n";
+		return;
+	}
+}
+
+
+void CGmshNetDDA::fTransfer_EstablishNetwork(double distol)
+{
+	// cycle all block.
+	// check block & fracture intersection.
+	// find the fractue block edge belonging to.
+
+	// node - joint position relationship.
+	for (vector<CGmshPoint>::iterator it_point = lv_GmshPoint.begin(); it_point != lv_GmshPoint.end(); it_point++)
+	{
+		for (vector<CNet_JointLine>::iterator it_netjntline = lv_NetJointLine.begin(); it_netjntline != lv_NetJointLine.end(); it_netjntline++)
+		{
+			// check node - joint position.
+			if (1 == fmath2d_PointInLineJudge(it_point->x,it_point->y, it_netjntline->bg_x, it_netjntline->bg_y, it_netjntline->ed_x, it_netjntline->ed_y,distol))
+			{
+				it_point->vi_JntFlag.push_back(it_netjntline->i_No);
+			}
+		}
+		it_point->i_NumJnt = it_point->vi_JntFlag.size();
+		if (it_point->i_NumJnt > 0) { it_point->i_JntFlag = 1; }
+		else { it_point->i_JntFlag = 0; }
+	}
+
+	// update triangle edge - joint status according to the node - joint position relationship.
+	for (vector<CGmshTriangle>::iterator it_triangle = lv_GmshTriangle.begin(); it_triangle != lv_GmshTriangle.end(); it_triangle++)
+	{
+		if (1 == lv_GmshPoint[it_triangle->i_PointNo_0 - 1].i_JntFlag)
+		{
+			it_triangle->ri_NodeFracFlag[0] = 1;
+		}
+		else { it_triangle->ri_NodeFracFlag[0] = 0; }
+		if (1 == lv_GmshPoint[it_triangle->i_PointNo_1 - 1].i_JntFlag)
+		{
+			it_triangle->ri_NodeFracFlag[1] = 1;
+		}
+		else { it_triangle->ri_NodeFracFlag[1] = 0; }
+		if (1 == lv_GmshPoint[it_triangle->i_PointNo_2 - 1].i_JntFlag)
+		{
+			it_triangle->ri_NodeFracFlag[2] = 1;
+		}
+		else { it_triangle->ri_NodeFracFlag[2] = 0; }
+	}
+
+	// flag triangle edge belonging to joint.
+	for (vector<CGmshTriangle>::iterator it_triangle = lv_GmshTriangle.begin(); it_triangle != lv_GmshTriangle.end(); it_triangle++)
+	{
+		// three edges.
+		if (1 == it_triangle->ri_NodeFracFlag[0] && 1 == it_triangle->ri_NodeFracFlag[1])
+		{
+			it_triangle->ri_EdgeFracFlag[0] = 1;
+		}
+		else { it_triangle->ri_EdgeFracFlag[0] = 0; }
+		if (1 == it_triangle->ri_NodeFracFlag[1] && 1 == it_triangle->ri_NodeFracFlag[2])
+		{
+			it_triangle->ri_EdgeFracFlag[1] = 1;
+		}
+		else { it_triangle->ri_EdgeFracFlag[1] = 0; }
+		if (1 == it_triangle->ri_NodeFracFlag[2] && 1 == it_triangle->ri_NodeFracFlag[0])
+		{
+			it_triangle->ri_EdgeFracFlag[2] = 1;
+		}
+		else { it_triangle->ri_EdgeFracFlag[2] = 0; }
+	}
+
+}
+
+// judge if a point is inside a line.
+int fmath2d_PointInLineJudge(double x0, double y0, double x1, double y1, double x2, double y2, double distol)
+{
+	// |dn| < distol.
+	// ratio [0,1].
+
+	double x01 = x1 - x0;
+	double y01 = y1 - y0;
+	double x02 = x2 - x0;
+	double y02 = y2 - y0;
+	double x12 = x2 - x1;
+	double y12 = y2 - y1;
+	double s_2 = fabs(x01 * y02 - x02 * y01);
+	double l12 = sqrt(x12 * x12 + y12 * y12);
+	double h0 = s_2 / l12;
+	double proj = (-x01 * x12 - y01 * y12) / l12;
+	if (h0 < distol && proj > -distol && proj < l12 + distol) { return 1; }
+	else { return 0; }
 }

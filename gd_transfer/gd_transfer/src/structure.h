@@ -1,6 +1,7 @@
+// pragma once.
 #pragma once
 
-// lib header.
+// libs included.
 #include <iostream>
 #include <fstream>
 #include <cstdlib>
@@ -18,6 +19,9 @@ class CGmshPoint
 public:
 	int i_No;
 	double x, y, z;
+	int i_JntFlag; //!< [1]jnt; [0]matrix.
+	int i_NumJnt;
+	vector<int> vi_JntFlag;
 };
 
 class CGmshNode
@@ -54,6 +58,9 @@ public:
 	int i_PointNo_0;
 	int i_PointNo_1;
 	int i_PointNo_2;
+	int ri_EdgeNodeNo[3]; //!< i_PointNo_0, i_PointNo_1, i_PointNo_2.
+	int ri_NodeFracFlag[3];	//!< [1]frac; [0]bond.
+	int ri_EdgeFracFlag[3];	//!< [1]frac; [0]bond.
 };
 
 class CGmshTetrahedron
@@ -81,9 +88,21 @@ public:
 	double d_FrictionAngle;
 };
 
-class GmshDDA
+class CNet_JointLine
 {
 public:
+	int i_No;
+	double bg_x, bg_y, bg_z;
+	double ed_x, ed_y, ed_z;
+};
+
+
+
+
+class CGmshNetDDA
+{
+public:
+	///// block part /////
 	int i_NumPoint;
 	int i_NumElement;
 	int i_NumNode;
@@ -96,16 +115,28 @@ public:
 	vector<CGmshTriangle> lv_GmshTriangle;
 	vector<CGmshTetrahedron> lv_GmshTetrahedron;
 	BlockPhysicalAttribute m_BlkPhyAttr;
-	void fReadBlkPhyAttr_txt(string str_0);
-	void fReadGmsh_msh(string str_0);
-	void fReadGmshNew_msh(string str_0);
-	void fWriteDDABlock_triangle_json(string str_0);
-	void fWriteDDABlock_triangle_vtp(string str_0);
-	void fWriteDDABlock_tetrahedron_json(string str_0);
-	void fWriteDDABlock_tetrahedron_vtp(string str_0);
+	///// network part /////
+	int i_NumNetJointLine;
+	vector<CNet_JointLine> lv_NetJointLine;
+	///// interface functions /////
+	void fRead_BlkPhyAttr_txt(string str_0);
+	void fRead_Gmsh_msh_v10(string str_0);
+	void fRead_Gmsh_msh_v40(string str_0);
+	void fRead_Network2d_JointLine_txt(string str_0);
+	void fWrite_DDABlock_triangle_json(string str_0);
+	void fWrite_DDABlock_triangle_vtp(string str_0);
+	void fWrite_DDABlock_tetrahedron_json(string str_0);
+	void fWrite_DDABlock_tetrahedron_vtp(string str_0);
+	void fWrite_Network2d_matrix_vtk(string str_0);
+	void fWrite_Network2d_fracture_global_vtk(string str_0);
+	void fWrite_Network2d_fracture_local_vtk(string str_0);
+	///// data operation functions /////
+	void fTransfer_EstablishNetwork(double distol);
 };
 
-
-
+//! judge if a point is inside a line.
+//! \return 1 inside;
+//! \return 0 outside.
+int fmath2d_PointInLineJudge(double x0, double y0, double x1,double y1, double x2, double y2, double distol);
 
 
